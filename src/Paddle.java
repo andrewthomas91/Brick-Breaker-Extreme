@@ -6,7 +6,7 @@ import java.io.IOException;
 public class Paddle{
 	
 	//Ints used for the x and y coordinates and the width and height of the paddle
-	private int xCord, xCordOld, yCord, width, height,yCordOld;
+	private double xCord, xCordOld, yCord, width, height, yCordOld;;
 	String imgPath = System.getProperty("user.dir") + File.separator + "Images" + File.separator;
 	private Image icon;
 	
@@ -65,10 +65,11 @@ public class Paddle{
 	Updates the paddle's x coordinate when called depending on the direction sent as the parameter.
 	@param direction The direction to move the paddle. A positive number to go to the right or a negative number to go to the left.
  */
-	public void moveMouse(int direction){
+	public void moveMouse(int direction, int mouseXCoord){
 		if ((direction > 0 && xCord < 540) || (direction < 0 && xCord > 0)){//The paddle can't move past the bounds of the screen
 			xCordOld = xCord;
-			xCord += direction * 10;//The paddle moves 20 pixels to either the left or right every time this method is called
+			xCord = mouseXCoord;
+//			xCord += direction * 10;//The paddle moves 20 pixels to either the left or right every time this method is called
 		}
 	}
 	
@@ -87,7 +88,7 @@ public class Paddle{
 	Gets the x coordinate of the paddle.
 	@return The x coordinate of the paddle
 	 */
-	public int getX(){
+	public double getX(){
 		return xCord;
 	}
 	
@@ -95,7 +96,7 @@ public class Paddle{
 	Gets the y coordinate of the paddle.
 	@return The y coordinate of the paddle
 	 */
-	public int getY(){
+	public double getY(){
 		return yCord;
 	}
 	
@@ -103,21 +104,21 @@ public class Paddle{
 	Sets the x coordinate of the paddle.
 	 */
 	public void setX(int x){
-		xCord=x;
+		xCord = x;
 	}
 	
 	/**
 	Sets the y coordinate of the paddle.
 	 */
 	public void setY(int y){
-		yCord=y;
+		yCord  =y;
 	}
 	
 	/**
 	Gets the old x coordinate of the paddle.
 	@return the old x coordinate of the paddle
 	 */
-	public int getXOld(){
+	public double getXOld(){
 		return xCordOld;
 	}
 	
@@ -125,7 +126,7 @@ public class Paddle{
 	Gets the old y coordinate of the paddle.
 	@return the old y coordinate of the paddle
 	 */
-	public int getYOld(){
+	public double getYOld(){
 		return yCordOld;
 	}
 	
@@ -133,7 +134,7 @@ public class Paddle{
 	Gets the width of the paddle.
 	@return the width of the paddle
 	 */
-	public int getW(){
+	public double getW(){
 		return width;
 	}
 	
@@ -142,14 +143,14 @@ public class Paddle{
 	@return the width of the paddle
 	 */
 	public void setW(int w){
-		width =w;
+		width = w;
 	}
 	
 	/**
 	Gets the height of the paddle.
 	@return the height of the paddle
 	 */
-	public int getH(){
+	public double getH(){
 		return height;
 	}
 	
@@ -158,7 +159,7 @@ public class Paddle{
 	@return the height of the paddle
 	 */
 	public void setH(int h){
-		height=h;
+		height = h;
 	}
 	
 	/**

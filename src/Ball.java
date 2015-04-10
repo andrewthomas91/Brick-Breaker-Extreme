@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class Ball{
-	private int xCord, yCord, radius, directionX, directionY, speed, score, speedOld, directionXOld;
+	private int yCord, radius, directionY, speed, score, speedOld;
+	double xCord, directionX, directionXOld;
 	private static Random r = new Random();
 	private CollisionDetection det;
 	private Image icon;
@@ -20,7 +21,7 @@ public class Ball{
 		xCord = r.nextInt(366);//An int between 0-365
 		xCord += 10;//Ten is added to this value to get it away from the left wall. Making random between 10-375
 		yCord = 540;//Starting y coordinate for the ball
-		radius = 20;//Radius of the ball
+		radius = 10;//Radius of the ball
 		score = 0;
 		//The initial x direction of the ball is chosen at random
 		directionY = -1;
@@ -88,19 +89,28 @@ public class Ball{
 	
 	/**
 	Updates the ball's x and y coordinates when called. Single Player move function. Also updates the x and y directions accordingly. Checks the game over condition.
-	@param pad The Paddle object being used in this game. Used to check if the ball bounces off it.
-	@param pad2 The second Paddle object being used in this game.
+	@param bottomPaddle The Paddle object being used in this game. Used to check if the ball bounces off it.
+	@param topPaddle The second Paddle object being used in this game.
 	@param bricks The bricks currently on the screen and being used by the game.
 	@return true if the game is still going, or false if the game is over.
  */
-	public boolean move(Paddle pad, Paddle pad2, ArrayList<Brick> bricks){
+	public boolean move(Paddle bottomPaddle, Paddle topPaddle, ArrayList<Brick> bricks){
+		boolean collisionDetected = false;
 		for(int i = 0; i < bricks.size(); i++){
 			if((bricks.get(i)).getAlive()){
-				if(det.BallAndBrick(this, directionX, directionY, bricks.get(i))){
+				switch(det.BallAndBrickDirection(this, bricks.get(i))) {
+					case 1: directionY = directionY * -1; collisionDetected = true; break;
+					case 2: directionY = directionY * -1; collisionDetected = true; break;
+					case 3: directionX = directionX * -1; collisionDetected = true; break;
+					case 4: directionX = directionX * -1; collisionDetected = true; break;
+					case 5: break;
+				}
+				if(collisionDetected) {
 					if(bricks.get(i).getLives() > 0)
 						bricks.get(i).hurtBrick();
 					if(bricks.get(i).getLives() == -1)
 						SoundEffect.WALL.play();
+					collisionDetected = false;
 				}
 			}
 		}
@@ -113,17 +123,17 @@ public class Ball{
 			if(xCord >= 585)
 				xCord = 584;
 		}
-		if (yCord >= 585 && (pad.getX() - 20 <= xCord || pad.getX() + 20 >= xCord))//If the ball has missed the paddle the game is ended by returning false
+		if (yCord >= 585 && (bottomPaddle.getX() - 20 <= xCord || bottomPaddle.getX() + 20 >= xCord))//If the ball has missed the paddle the game is ended by returning false
 			return true;
-		if (yCord <= 29 && (pad2.getX() - 20 <= xCord || pad2.getX() + 20 >= xCord))//If the ball has missed the paddle the game is ended by returning false
+		if (yCord <= 29 && (topPaddle.getX() - 20 <= xCord || topPaddle.getX() + 20 >= xCord))//If the ball has missed the paddle the game is ended by returning false
 			return true;
 		
-		if (det.BallAndPaddleTopBottom(this, directionY, pad, pad2)){//If the ball hits either of the paddle does the following
+		if (det.BallAndPaddleTopBottom(this, bottomPaddle, topPaddle)){//If the ball hits either of the paddle does the following
 			SoundEffect.PADDLE.play();
 			score++;
 			if(score%10 == 0)//Increments the speed every five points
 				speed++;
-			directionX = det.Angle(this, pad);
+			directionX = det.Angle(this, bottomPaddle);
 			directionY = directionY * -1;//Changes the y direction of the ball
 		}
 			
@@ -131,52 +141,6 @@ public class Ball{
 		xCord += directionX;
 		yCord += directionY * speed;
 		return false;//Returns true meaning the game has not ended
-	}
-	
-	/**
-		Updates the ball's x and y coordinates when called. Two player move function. Also updates the x and y directions accordingly. Checks the game over condition.
-		@param pad The Paddle object being used in this game. Used to check if the ball bounces off it.
-		@param pad2 The second Paddle object being used in this game.
-		@param pad3 The third Paddle object being used in this game.
-		@param pad4 The fourth Paddle object being used in this game.
-		@param bricks The bricks currently on the screen and being used by the game.
-		@return true if the game is still going, or false if the game is over.
-	 */
-	public boolean move(Paddle pad, Paddle pad2, Paddle pad3, Paddle pad4, ArrayList<Brick> bricks){	
-		for(int i = 0; i < bricks.size(); i++){
-			if((bricks.get(i)).getAlive()){
-				if(det.BallAndBrick(this, directionX, directionY, bricks.get(i)))
-					if(bricks.get(i).getLives() > 0)
-						bricks.get(i).hurtBrick();
-			}
-		}
-		
-		//Checks for game over
-		if (yCord >= 585 && (pad.getX() - 20 <= xCord || pad.getX() + 20 >= xCord))//If the ball has missed the paddle the game is ended by returning false
-			return true;
-		if (yCord <= 29 && (pad2.getX() - 20 <= xCord || pad2.getX() + 20 >= xCord))
-			return true;
-		if (xCord <= -5 || xCord >= 585)//Left and Right walls
-			return true;
-		
-		if (det.BallAndPaddleTopBottom(this, directionY, pad, pad2)){//If the ball hits either of the top or bottom paddles does the following
-			SoundEffect.PADDLE.play();
-			score++;
-			if(score%10 == 0)//Increments the speed every five points
-				speed++;
-			directionX = det.Angle(this, pad);
-			directionY = directionY * -1;//Changes the y direction of the ball
-		}
-
-		if (det.BallAndPaddleLeftRight(this, directionX, pad3, pad4)){//If the ball hits either of the left or right paddles does the following
-			SoundEffect.PADDLE.play();
-			directionX = directionX * -1;//Changes the x direction of the ball
-		}
-					
-		//Updates the coordinates using the current directions (x and y) and the speed of the ball
-		yCord += directionY * speed;
-		xCord += directionX;
-		return false;//Returns false meaning the game has not ended
 	}
 			
 	/**
@@ -224,8 +188,16 @@ public class Ball{
 	Gets the x coordinate of the ball.
 	@return the x coordinate of the ball
 	 */
-	public int getX(){
+	public double getX(){
 		return xCord;
+	}
+	
+	/**
+	Gets the x coordinate of the ball.
+	@return the x coordinate of the ball
+	 */
+	public int getXAsInt(){
+		return (int) (xCord);
 	}
 	
 	/**
@@ -240,8 +212,16 @@ public class Ball{
 	 * Gets the Direction of X
 	 * @return directionX
 	 */
-	public int getXDir(){
+	public double getXDir(){
 		return directionX;
+	}
+	
+	/**
+	 * Gets the Direction of X
+	 * @return directionX
+	 */
+	public int getXDirAsInt(){
+		return (int) (directionX);
 	}
 	
 	/**

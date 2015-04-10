@@ -53,12 +53,12 @@ public abstract class PowerUp{
 		Moves the powerup down the screen.
 		Checks to see if it is collected via the bottom paddle.
 		Returns true if it is collected.
-		@param pad The bottom paddle.
-		@param pad2 The top paddle.
+		@param bottomPaddle
+		@param topPaddle
 		@return True if the powerup was collected or false if it wasn't.
 	 */
-		public boolean move(Paddle pad, Paddle pad2){
-			if (det.PowerupAndPaddleTopBottom(this, directionY, pad, pad2)){
+		public boolean move(Paddle bottomPaddle, Paddle topPaddle){
+			if (det.PowerupAndPaddleTopBottom(this, bottomPaddle, topPaddle)){
 				collected = true;
 				icon = null;
 				xCord = 0;
@@ -180,5 +180,11 @@ public abstract class PowerUp{
 			return collected;
 		}
 		
-
+		/**
+		Gets the y direction powerup is traveling.
+		@return The y direction.
+	 */
+		public int directionY(){
+			return directionY;
+		}
 }

@@ -1,14 +1,8 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
 public class Display extends JFrame{	
@@ -139,7 +133,12 @@ public class Display extends JFrame{
 	@param b The ball.
  */
 	public Graphics drawBall(Ball b){
-		offscr.drawImage(b.getIcon(), b.getX(), b.getY(), null);
+		offscr.drawImage(b.getIcon(), b.getXAsInt() - b.getRadius(), b.getY() - b.getRadius(), null);
+		offscr.drawOval(b.getXAsInt(), b.getY(), 1, 1);
+		offscr.drawLine(b.getXAsInt(), b.getY(), b.getXAsInt(), b.getY() + b.getRadius());
+		offscr.drawLine(b.getXAsInt(), b.getY(), b.getXAsInt(), b.getY() - b.getRadius());
+		offscr.drawLine(b.getXAsInt(), b.getY(), b.getXAsInt() + b.getRadius(), b.getY());
+		offscr.drawLine(b.getXAsInt(), b.getY(), b.getXAsInt() - b.getRadius(), b.getY());
 		return offscr;
 	}
 	
@@ -165,7 +164,7 @@ public class Display extends JFrame{
 	@param p the paddle.
  */
 	public Graphics drawPaddle(Paddle p){
-		offscr.drawImage(p.getIcon(), p.getX(), p.getY(), null);
+		offscr.drawImage(p.getIcon(), (int) p.getX(), (int) p.getY(), null);
 		return offscr;
 	}
 	
@@ -176,6 +175,7 @@ public class Display extends JFrame{
 	public Graphics drawBricks(ArrayList<Brick> bricks){
 		for (int i = 0; i < bricks.size(); i++){
 			offscr.drawImage(bricks.get(i).getIcon(), bricks.get(i).getX(), bricks.get(i).getY(), null);
+			offscr.drawOval(bricks.get(i).getX(), bricks.get(i).getY(), 5, 5);
 		}	
 		return offscr;
 	}	

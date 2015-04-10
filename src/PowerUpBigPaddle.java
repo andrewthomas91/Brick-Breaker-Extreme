@@ -29,33 +29,15 @@ public class PowerUpBigPaddle extends PowerUp {
 		SoundEffect.LEVEL.play();
 		pad1.setW(120);
 		pad2.setW(120);
-		if(getGame().getOnePlayer()==false){
-			pad3.setW(120);
-			pad4.setW(120);
-			
-		}
 		pad1.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "paddleBig.png"));
 		pad2.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "paddleBig.png"));
-		if (getGame().getOnePlayer()==false){
-			pad3.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "vPaddleBig.png"));
-			pad4.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "vPaddleBig.png"));
-		}
 	}
 
 	public void removeAction() {	
 		pad1.setW(60);
 		pad2.setW(60);
-		if(getGame().getOnePlayer()==false){
-			pad3.setW(60);
-			pad4.setW(60);
-		}
-		
 		pad1.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "paddle.png"));
 		pad2.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "paddle.png"));
-		if (getGame().getOnePlayer()==false){
-			pad3.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "paddle.png"));
-			pad4.setIcon(Toolkit.getDefaultToolkit().getImage(imgPath + "paddle.png"));
-		}
 	}
 }
 

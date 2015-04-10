@@ -13,8 +13,8 @@ import javax.swing.JOptionPane;
 public class Game extends JFrame implements Runnable
 {	
 	private Display display;
-	private Ball b;//The ball
-	private Paddle p, p2, p3, p4 ;//The paddles
+	private Ball ball;//The ball
+	private Paddle bottomPaddle, topPaddle;
 	private LevelGenerator level;
 	private HighScoreList list;
 	
@@ -35,7 +35,6 @@ public class Game extends JFrame implements Runnable
 	private boolean lostLife = false;
 	private boolean levelComplete = false;
 	private boolean highScoreScreen = false;
-	private boolean onePlayer;
 	private boolean mute = false;
 	
 	private static Random r = new Random();
@@ -65,11 +64,9 @@ public class Game extends JFrame implements Runnable
 		
 		
 		SoundEffect.init();
-		p = new Paddle();
-		p2 = new Paddle(30);
-		p3 = new Paddle(585,200,"vPaddle.png");
-		p4 = new Paddle(5,200,"vPaddle.png");
-		b = new Ball();
+		bottomPaddle = new Paddle();
+		topPaddle = new Paddle(30);
+		ball = new Ball();
 		level = new LevelGenerator();
 		list = new HighScoreList();
 		display = new Display(offscreenImage);				
@@ -129,33 +126,20 @@ public class Game extends JFrame implements Runnable
 					offscr = display.clear();//Clears the screen.
 					offscr = display.drawBackground(levelNum);
 				
-					if(onePlayer){
-						lostLife = b.move(p, p2, bricks);
+					lostLife = ball.move(bottomPaddle, topPaddle, bricks);
 						
-						if(!isPaused){
-							for(int i = 0; i < powerUps.size(); i++){
+					if(!isPaused){
+						for(int i = 0; i < powerUps.size(); i++){
+						
+							powerUps.get(i).move(bottomPaddle,topPaddle);
 								
-								powerUps.get(i).move(p,p2);
-								
-								if(powerUps.get(i).getActive()){
-									powerUps.get(i).TimePass();
-								}
-								
-								else if(powerUps.get(i).getCollected()){
-									powerUps.get(i).removeAction();
-									powerUps.remove(i);	
-								}
+							if(powerUps.get(i).getActive()){
+								powerUps.get(i).TimePass();
 							}
-						}
-					}
-				
-					else{ 				 
-						if(!isPaused){
-							lostLife = b.move(p, p2, p3, p4, bricks);
-							for(int i = 0; i < powerUps.size(); i++){
-								powerUps.get(i).move(p,p2);
-								if(powerUps.get(i).OffScreen())
-									powerUps.remove(i);
+								
+							else if(powerUps.get(i).getCollected()){
+								powerUps.get(i).removeAction();
+								powerUps.remove(i);	
 							}
 						}
 					}
@@ -179,22 +163,17 @@ public class Game extends JFrame implements Runnable
 				
 					if(flashingBall){
 						if((flashingCounter / 25) % 2 == 1){	
-							offscr = display.drawBall(b);
+							offscr = display.drawBall(ball);
 						}
 						flashingCounter++;
 					}
 					else{
 						flashingCounter = 1;
-						offscr = display.drawBall(b);
+						offscr = display.drawBall(ball);
 					}
-					offscr = display.drawInfo(b, lives, scoreTotal + scoreLevel, levelNum);	
-					offscr = display.drawPaddle(p);
-					offscr = display.drawPaddle(p2);
-				
-					if(!onePlayer){
-						offscr = display.drawPaddle(p3);
-						offscr = display.drawPaddle(p4);
-					}
+					offscr = display.drawInfo(ball, lives, scoreTotal + scoreLevel, levelNum);	
+					offscr = display.drawPaddle(bottomPaddle);
+					offscr = display.drawPaddle(topPaddle);
 					offscr = display.drawBricks(bricks);
 					
 					for(int i = 0; i < powerUps.size(); i++){
@@ -218,10 +197,10 @@ public class Game extends JFrame implements Runnable
 								powerUps.add(new PowerUpInverse((bricks.get(i)).getX(), (bricks.get(i)).getY(),30,1,1,300,this));
 								break;
 							case 1:
-								powerUps.add(new PowerUpSmallPaddle((bricks.get(i)).getX(), (bricks.get(i)).getY(),1,1,300,this,p,p2,p3,p4));
+								powerUps.add(new PowerUpSmallPaddle((bricks.get(i)).getX(), (bricks.get(i)).getY(),1,1,300,this,bottomPaddle,topPaddle));
 								break;
 							case 2:
-								powerUps.add(new PowerUpBigPaddle((bricks.get(i)).getX(), (bricks.get(i)).getY(),1,1,300,this, p, p2));
+								powerUps.add(new PowerUpBigPaddle((bricks.get(i)).getX(), (bricks.get(i)).getY(),1,1,300,this, bottomPaddle, topPaddle));
 								break;
 							case 3:
 								powerUps.add(new PowerUpAddLife((bricks.get(i)).getX(), (bricks.get(i)).getY(),30,1,1,0,this));
@@ -264,8 +243,8 @@ public class Game extends JFrame implements Runnable
 						flashingBall = false;
 						powerUps.clear();
 						bricks.clear();
-						if(b.getScore() != 0){
-							double hits = b.getScore() / 10.0;
+						if(ball.getScore() != 0){
+							double hits = ball.getScore() / 10.0;
 							double efficentBonus = scoreLevel / hits;
 							double lifeAndLevelBonus = scoreLevel * (levelNum + lives);
 							bonus = (int) Math.round(efficentBonus + lifeAndLevelBonus);
@@ -349,14 +328,6 @@ public class Game extends JFrame implements Runnable
 	}
 	
 	/**
-	Gets the boolean representing if the current game is in one or two player mode.
-	@return The onePlayer boolean.
-	 */
-	public boolean getOnePlayer(){
-		return onePlayer;
-	}
-	
-	/**
 	The MyHandler object which implements KeyListener. Used to listen for user input to move the paddle and start a new game.
 	 */
 	private class MyHandler implements KeyListener { 	
@@ -375,41 +346,27 @@ public class Game extends JFrame implements Runnable
     		if (e.getKeyCode()==39)//Right arrow key code
     		{
     			if(!gameOver && !isPaused){//Only moves the paddle if there is a game going
-    				p.move(1*inverse);
-    				p2.move(1*inverse);
+    				bottomPaddle.move(1*inverse);
+    				topPaddle.move(1*inverse);
     			}
     		}
     		
     		if (e.getKeyCode()==37)//Left arrow key code
     		{
     			if(!gameOver && !isPaused){
-    				p.move(-1*inverse);
-    				p2.move(-1*inverse);
+    				bottomPaddle.move(-1*inverse);
+    				topPaddle.move(-1*inverse);
 				}
-    		}
-    		if (e.getKeyCode()==83)//s arrow key code
-    		{
-    			if(!gameOver && !isPaused){//Only moves the paddle if there is a game going
-    				p3.moveY(1*inverse);
-    				p4.moveY(1*inverse);
-    			}
-    		}
-    		if (e.getKeyCode()==87)//w arrow key code
-    		{
-    			if(!gameOver && !isPaused){//Only moves the paddle if there is a game going
-    				p3.moveY(-1*inverse);
-    				p4.moveY(-1*inverse);
-    			}
     		}
     		if (e.getKeyCode()==80 && !gameOver && !levelComplete && !lostLife)//p key code
     		{
     			if (!isPaused){
     				isPaused = true;
-    				b.stop();
+    				ball.stop();
     			}
     			else {
     				isPaused = false;
-    				b.resume();
+    				ball.resume();
     			}
     		}
     		
@@ -418,7 +375,6 @@ public class Game extends JFrame implements Runnable
     			 if(gameOver && !highScoreScreen){
     				 newGame = false;
     	    	     gameOver = false;
-    	    	     onePlayer= true;
     			 }
     			 if(highScoreScreen){
     				 String str = JOptionPane.showInputDialog(null, "Enter user name:", "", 1);
@@ -430,15 +386,6 @@ public class Game extends JFrame implements Runnable
     					 JOptionPane.showMessageDialog(null, "No name entered.", "", 1);
     			 }
  		    }
-    		 
-    		if (e.getKeyCode()==50)//2 key code
-    		{
-    			if(gameOver && !highScoreScreen){
-    				onePlayer= false;
-    				gameOver = false;
-    				newGame = false;
-    			}
-    		}
     		
     		if (e.getKeyCode()==51)//3 key code
     		{
@@ -455,9 +402,9 @@ public class Game extends JFrame implements Runnable
     		if (e.getKeyCode()==10 && !isPaused)//Enter key code
     		{
     			if(gameOver || levelComplete || lostLife){//Only starts a new game if there is none currently going on
-    				b.newGame();//Resets variables for a new game
+    				ball.newGame();//Resets variables for a new game
     				if(gameOver){
-    					b.setScore(0);
+    					ball.setScore(0);
     					newGame = true;
     					levelNum = 1;
     					bricks.clear();
@@ -468,7 +415,7 @@ public class Game extends JFrame implements Runnable
     					levelComplete = false;
     					levelNum++;
     					makeBricks();
-    					b.setScore(0);
+    					ball.setScore(0);
     				}
     				if(lostLife)
     					lostLife = false;
@@ -519,35 +466,19 @@ public class Game extends JFrame implements Runnable
 		        
 				if (x>oldX+5){
 		        	if(!gameOver && !isPaused){
-	    				p.moveMouse(1*inverse);
-	    				p2.moveMouse(1*inverse);
+	    				bottomPaddle.moveMouse(1*inverse, x);
+	    				topPaddle.moveMouse(1*inverse, x);
 	    				oldX=x;
 	    			    
 					}
 		        }
 		        if (x<oldX-5){
 		        	if(!gameOver && !isPaused){
-	    				p.moveMouse(-1*inverse);
-	    				p2.moveMouse(-1*inverse);
+	    				bottomPaddle.moveMouse(-1*inverse, x);
+	    				topPaddle.moveMouse(-1*inverse, x);
 	    				oldX=x;
 					}
-		        }
-		        
-		        if (y>oldY+10){
-		        	if(!gameOver && !isPaused){
-	    				p3.moveY(1*inverse);
-	    				p4.moveY(1*inverse);
-	    				oldY=y;
-		        	}
-		        }
-		        if (y <oldY-10){
-		        	if(!gameOver && !isPaused){
-	    				p3.moveY(-1*inverse);
-	    				p4.moveY(-1*inverse);
-		        		oldY=y;
-					}
-		        }
-		     
+		        }		     
 	    	}
 
 			@Override
